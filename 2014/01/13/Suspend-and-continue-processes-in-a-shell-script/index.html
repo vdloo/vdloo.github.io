@@ -40,7 +40,7 @@ ript>
 
 
 <div class="row-fluid">
-  <div class="span8">
+  <div class="span12">
     <h1>Suspend and continue processes (ctrl+z) in a shell script</h1>
     <p class="muted">13 January 2014</p>
 
@@ -50,17 +50,13 @@ ript>
 <p>Control-z is very interesting because it suspends the process you are running, effectively pausing it. It works by sending the TSTP signal to the process. This can be very convenient if you just need to clear up some processing power or have another reason to give your process a break before continuing (like for example pausing tar if your volume is about to have no space left). The Control-z functionality can be simulated by running kill -TSTP $PID with $PID as the process ID of your process. Just like you might resume the process with fg in the command line, you can run kill -CONT $PID to un-pause the process. So if you were to implement this in a shell script, you could do something like
 <br></p>
 
-<div class="highlight"><pre><code class="bash"><span class="nv">$ </span><span class="nb">command</span> &amp; <span class="nv">COMMANDPID</span><span class="o">=</span><span class="nv">$!</span>
-</code></pre>
-</div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="nb">command</span> <span class="p">&amp;</span> <span class="nv">COMMANDPID</span><span class="o">=</span><span class="nv">$!</span></code></pre></div>
 
 
 <p>and then do
 <br></p>
 
-<div class="highlight"><pre><code class="bash"><span class="nv">$ </span><span class="nb">kill</span> -TSTP <span class="nv">$COMMANDPID</span>
-</code></pre>
-</div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="nb">kill</span> -TSTP <span class="nv">$COMMANDPID</span></code></pre></div>
 
 
 <p>to pause your process after initial execution ($! catches the PID of the last launched process in the shell, if you get "-bash: !: event not found" add a whitespace after the !). The problem with this approach is that this functionality is mostly useful when you are running parts of your script parallel and already in the background or in subshells, and if that is the case then doing kill -TSTP might not be good enough.
@@ -69,48 +65,12 @@ ript>
 <p>You can run a script or program with lots of subprocesses or subshells and neatly pause it with Control-z. If you'd try the same thing with the kill -TSTP command in a complex shell script you might run into some difficulties. The difference here is that kill -TSTP only sends the signal to the highest PID in the hierarchy and the signal won't reach all the levels. This is often not a problem because most scripts don't go that deep, if you want that level of abstraction for system stuff you are probably better of with some scripting language like python or perl. But hey, in the spirit of why not: to make sure you are actually suspending the entire process chain you can do something like this.
 <br></p>
 
-<div class="highlight"><pre><code class="bash"><span class="nv">$ </span><span class="k">for </span>childprocess in <span class="k">$(</span>ps -o pid --ppid <span class="nv">$PID</span> | tail -n +2<span class="k">)</span>; 
-    <span class="k">do </span><span class="nb">kill</span> -TSTP <span class="nv">$childprocess</span>; 
-  <span class="k">done</span>;
-</code></pre>
-</div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="k">for</span> childprocess in <span class="k">$(</span>ps -o pid --ppid <span class="nv">$PID</span> <span class="p">|</span> tail -n +2<span class="k">)</span><span class="p">;</span> 
+    <span class="k">do</span> <span class="nb">kill</span> -TSTP <span class="nv">$childprocess</span><span class="p">;</span> 
+  <span class="k">done</span><span class="p">;</span></code></pre></div>
 
 
 <p>replace TSTP with CONT to continue the chain. Watch out though, the --ppid flag (select by parent process ID) is not supported on FreeBSD so if that's your platform you might have to figure out something else.</p>
-
-  </div>
-  <div class="span4">
-    <div id="about"><h3>About me</h3></div>
-
-<p>
-Rick van de Loo, software developer in the Amsterdam area. I like devops, cloud, python and LISP.
-<br>
-<br>
-Find me on <a href="https://github.com/vdloo">Github</a> or <a href="mailto:rickvandeloo@gmail.com">drop me a line</a></p>
-<hr>
-
-<p>Other posts:</p>
-<ul>
-  
-    <li><a href="/2014/11/24/configuring-network-bridge-debian-jessie-static-address/">Configuring a network bridge on Debian 8.0 for static addresses</a></li>
-  
-    <li><a href="/2014/11/21/partially-synchronising-a-structured-folder-to-smaller-storage/">Partially synchronising a structured folder (on a Synology machine) to a smaller storage</a></li>
-  
-    <li><a href="/2014/07/03/fibonacci-in-finite-fields-in-racket/">Implementing Fibonacci in finite fields, in racket</a></li>
-  
-    <li><a href="/2014/07/02/why-I-am-starting-the-SICP-reading-project-this-summer/">The SICP reading project</a></li>
-  
-    <li><a href="/2014/01/13/Suspend-and-continue-processes-in-a-shell-script/">Suspend and continue processes (ctrl+z) in a shell script</a></li>
-  
-    <li><a href="/2013/09/21/Fixing-the-ds-audio-and-video-you-are-not-authorized-to-use-this-service-error/">Not authorized to use this service in DS Audio and Video</a></li>
-  
-    <li><a href="/2012/08/01/Sending-data-over-Wi-Fi-without-associations/">Sending data over Wi-Fi without associations</a></li>
-  
-    <li><a href="/2012/08/01/Beacontalk-peer-to-peer-chat-program-that-sends-data-over-Wi-Fi-without-associations/">Beacontalk - Peer to peer chat-program that sends data over Wi-Fi without associations</a></li>
-  
-    <li><a href="/2012/06/03/Playlist2XBMC/">Playlist2XBMC</a></li>
-  
-</ul>
 
   </div>
 </div>

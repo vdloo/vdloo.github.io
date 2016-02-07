@@ -40,7 +40,7 @@ ript>
 
 
 <div class="row-fluid">
-  <div class="span8">
+  <div class="span12">
     <h1>Implementing Fibonacci in finite fields, in racket</h1>
     <p class="muted">03 July 2014</p>
 
@@ -70,53 +70,45 @@ scheme.</p>
 
 <p>The original addmod function</p>
 
-<div class="highlight"><pre><code class="cpp"><span class="n">u64</span> <span class="nf">addmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">addmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span>
     <span class="k">else</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">-</span> <span class="n">p</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<span class="p">}</span></code></pre></div>
 
 
 <p>becomes:</p>
 
-<div class="highlight"><pre><code class="racket"><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">addmod</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">p</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">if </span> <span class="p">(</span><span class="nb">&gt; </span><span class="p">(</span><span class="nb">- </span><span class="nv">p</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">a</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">+ </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nb">+ </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">p</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">addmod</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span>  <span class="p">(</span><span class="nb">&gt;</span> <span class="p">(</span><span class="nb">-</span> <span class="n">p</span> <span class="n">b</span><span class="p">)</span> <span class="n">a</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">+</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nb">+</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span> <span class="n">p</span><span class="p">)</span>
     <span class="p">)</span>
-<span class="p">)</span>
-</code></pre>
-</div>
+<span class="p">)</span></code></pre></div>
 
 
 <p>and the original submod function</p>
 
-<div class="highlight"><pre><code class="cpp"><span class="n">u64</span> <span class="nf">submod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">submod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">b</span><span class="p">)</span> <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">;</span>
     <span class="k">else</span> <span class="k">return</span> <span class="n">p</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">a</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<span class="p">}</span></code></pre></div>
 
 
 <p>becomes:</p>
 
-<div class="highlight"><pre><code class="racket"><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">submod</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">p</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&gt;= </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">- </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nb">- </span><span class="nv">p</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">a</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="k">submod</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;=</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">-</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nb">-</span> <span class="n">p</span> <span class="n">b</span><span class="p">)</span> <span class="n">a</span><span class="p">)</span>
     <span class="p">)</span>
-<span class="p">)</span>
-</code></pre>
-</div>
+<span class="p">)</span></code></pre></div>
 
 
 <p>The mulmod function is a bit more complicated:</p>
 
-<div class="highlight"><pre><code class="cpp"><span class="n">u64</span> <span class="nf">mulmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">mulmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="n">u64</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
@@ -128,9 +120,7 @@ scheme.</p>
     <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<span class="p">}</span></code></pre></div>
 
 
 <p>The implementation in scheme displays more clearly the difference
@@ -138,21 +128,19 @@ between a functional programming language and the imperative c++. The
 implementation in scheme is ostensibly inside out compared to the
 original.</p>
 
-<div class="highlight"><pre><code class="racket"><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">mulmod</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">p</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">mulmod_rec</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">p</span> <span class="mi">0</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">mulmod</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">mulmod_rec</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span> <span class="mi">0</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">mulmod_rec</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">p</span> <span class="nv">r</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&gt; </span><span class="nv">b</span> <span class="mi">0</span><span class="p">)</span>
-      <span class="p">(</span><span class="nf">mulmod_rec</span> <span class="p">(</span><span class="nf">addmod</span> <span class="nv">a</span> <span class="nv">a</span> <span class="nv">p</span><span class="p">)</span>
-          <span class="p">(</span><span class="nb">arithmetic-shift </span><span class="nv">b</span> <span class="mi">-1</span><span class="p">)</span>
-          <span class="nv">p</span>
-          <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="mi">1</span> <span class="p">(</span><span class="nb">bitwise-and </span><span class="nv">b</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="nf">addmod</span> <span class="nv">a</span> <span class="nv">r</span> <span class="nv">p</span><span class="p">)</span> <span class="nv">r</span><span class="p">)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">mulmod_rec</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span> <span class="n">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;</span> <span class="n">b</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">mulmod_rec</span> <span class="p">(</span><span class="n">addmod</span> <span class="n">a</span> <span class="n">a</span> <span class="n">p</span><span class="p">)</span>
+          <span class="p">(</span><span class="nb">arithmetic-shift</span> <span class="n">b</span> <span class="mi">-1</span><span class="p">)</span>
+          <span class="n">p</span>
+          <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">bitwise-and</span> <span class="n">b</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="n">addmod</span> <span class="n">a</span> <span class="n">r</span> <span class="n">p</span><span class="p">)</span> <span class="n">r</span><span class="p">)</span>
       <span class="p">)</span>
-      <span class="nv">r</span>
+      <span class="n">r</span>
     <span class="p">)</span>
-<span class="p">)</span>
-</code></pre>
-</div>
+<span class="p">)</span></code></pre></div>
 
 
 <p>Instead of a while loop, the scheme implementation of mulmod calls
@@ -176,7 +164,7 @@ does</a>.</p>
 
 <p>Next up is powmod:</p>
 
-<div class="highlight"><pre><code class="cpp"><span class="n">u64</span> <span class="nf">powmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">e</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">powmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">e</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="n">u64</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
 
@@ -188,28 +176,24 @@ does</a>.</p>
     <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<span class="p">}</span></code></pre></div>
 
 
 <p>Which follows almost the exact same structure as mulmod:</p>
 
-<div class="highlight"><pre><code class="racket"><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">powmod</span> <span class="nv">a</span> <span class="nv">e</span> <span class="nv">p</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">powmod_rec</span> <span class="nv">a</span> <span class="nv">e</span> <span class="nv">p</span> <span class="mi">1</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">powmod</span> <span class="n">a</span> <span class="n">e</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">powmod_rec</span> <span class="n">a</span> <span class="n">e</span> <span class="n">p</span> <span class="mi">1</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">powmod_rec</span> <span class="nv">a</span> <span class="nv">e</span> <span class="nv">p</span> <span class="nv">r</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&gt; </span><span class="nv">e</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="p">(</span><span class="nf">powmod_rec</span> <span class="p">(</span><span class="nf">mulmod</span> <span class="nv">a</span> <span class="nv">a</span> <span class="nv">p</span><span class="p">)</span>
-            <span class="p">(</span><span class="nb">arithmetic-shift </span><span class="nv">e</span> <span class="mi">-1</span><span class="p">)</span>
-            <span class="nv">p</span>
-            <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="mi">1</span> <span class="p">(</span><span class="nb">bitwise-and </span><span class="nv">e</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="nf">mulmod</span> <span class="nv">r</span> <span class="nv">a</span> <span class="nv">p</span><span class="p">)</span> <span class="nv">r</span><span class="p">)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">powmod_rec</span> <span class="n">a</span> <span class="n">e</span> <span class="n">p</span> <span class="n">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;</span> <span class="n">e</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">powmod_rec</span> <span class="p">(</span><span class="n">mulmod</span> <span class="n">a</span> <span class="n">a</span> <span class="n">p</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">arithmetic-shift</span> <span class="n">e</span> <span class="mi">-1</span><span class="p">)</span>
+            <span class="n">p</span>
+            <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">bitwise-and</span> <span class="n">e</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="n">mulmod</span> <span class="n">r</span> <span class="n">a</span> <span class="n">p</span><span class="p">)</span> <span class="n">r</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="nv">r</span>
+        <span class="n">r</span>
     <span class="p">)</span>
-<span class="p">)</span>
-</code></pre>
-</div>
+<span class="p">)</span></code></pre></div>
 
 
 <p>Note that instead of doing assigning 0 to r before the while loop in
@@ -218,7 +202,7 @@ mulmod_rec. The same goes for powmod and powmod_rec.</p>
 
 <p>To tie it all together we have the fib function:</p>
 
-<div class="highlight"><pre><code class="cpp"><span class="n">u64</span> <span class="nf">fib</span><span class="p">(</span><span class="n">u64</span> <span class="n">n</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">fib</span><span class="p">(</span><span class="n">u64</span> <span class="n">n</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="n">u64</span> <span class="n">p</span>     <span class="o">=</span> <span class="mh">0xa94fad42221f27ad</span><span class="p">;</span>
     <span class="n">u64</span> <span class="n">v</span>     <span class="o">=</span> <span class="mh">0x0b92025517515f58</span><span class="p">;</span>
@@ -232,30 +216,26 @@ mulmod_rec. The same goes for powmod and powmod_rec.</p>
     <span class="n">u64</span> <span class="n">factor</span> <span class="o">=</span> <span class="n">mulmod</span><span class="p">(</span><span class="n">v_inv</span><span class="p">,</span> <span class="n">pow2_inv</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
 
     <span class="k">return</span> <span class="n">mulmod</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<span class="p">}</span></code></pre></div>
 
 
 <p>Which in Racket looks like:</p>
 
-<div class="highlight"><pre><code class="racket"><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">fib</span> <span class="nv">n</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">q</span><span class="p">)</span>     <span class="mi">12200160415121876909</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">v</span><span class="p">)</span>     <span class="mi">833731445503647576</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">v_inv</span><span class="p">)</span> <span class="mi">2606778372125104897</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">mulmod</span> <span class="p">(</span><span class="nf">submod</span> <span class="p">(</span><span class="nf">powmod</span> <span class="p">(</span><span class="nb">+ </span><span class="mi">1</span> <span class="p">(</span><span class="nf">v</span><span class="p">))</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">q</span><span class="p">))</span>
-              <span class="p">(</span><span class="nf">powmod</span> <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nf">q</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="nf">v</span><span class="p">))</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">q</span><span class="p">))</span>
-              <span class="p">(</span><span class="nf">q</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">fib</span> <span class="n">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">q</span><span class="p">)</span>     <span class="mi">12200160415121876909</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">v</span><span class="p">)</span>     <span class="mi">833731445503647576</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">v_inv</span><span class="p">)</span> <span class="mi">2606778372125104897</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">mulmod</span> <span class="p">(</span><span class="k">submod</span> <span class="p">(</span><span class="n">powmod</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="n">n</span> <span class="p">(</span><span class="n">q</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">powmod</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="n">n</span> <span class="p">(</span><span class="n">q</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">q</span><span class="p">)</span>
           <span class="p">)</span>
-          <span class="p">(</span><span class="nf">mulmod</span> <span class="p">(</span><span class="nf">v_inv</span><span class="p">)</span>
-              <span class="p">(</span><span class="nf">powmod</span> <span class="mi">2</span> <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">q</span><span class="p">)</span> <span class="mi">1</span> <span class="nv">n</span><span class="p">)</span> <span class="p">(</span><span class="nf">q</span><span class="p">))</span>
-              <span class="p">(</span><span class="nf">q</span><span class="p">)</span>
+          <span class="p">(</span><span class="n">mulmod</span> <span class="p">(</span><span class="n">v_inv</span><span class="p">)</span>
+              <span class="p">(</span><span class="n">powmod</span> <span class="mi">2</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="mi">1</span> <span class="n">n</span><span class="p">)</span> <span class="p">(</span><span class="n">q</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">q</span><span class="p">)</span>
           <span class="p">)</span>
-          <span class="p">(</span><span class="nf">q</span><span class="p">)</span>
+          <span class="p">(</span><span class="n">q</span><span class="p">)</span>
     <span class="p">)</span>
-<span class="p">)</span>
-</code></pre>
-</div>
+<span class="p">)</span></code></pre></div>
 
 
 <p>So now we have all the components to generate a Fibonacci number. It
@@ -268,22 +248,20 @@ in a recursive procedure. Full disclosure though: it would probably be
 faster to use the regular iterative method if you are going to calculate
 all the numbers anyway, but that doesn't take away the fun.</p>
 
-<div class="highlight"><pre><code class="racket"><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">fib-iter</span> <span class="nv">n</span> <span class="nv">count</span> <span class="nv">result</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">display </span><span class="s">&quot;Computing fib for &quot;</span><span class="p">)(</span><span class="nb">display </span><span class="nv">count</span><span class="p">)(</span><span class="nb">display </span><span class="s">&quot;: &quot;</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">display </span><span class="nv">result</span><span class="p">)(</span><span class="nf">newline</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">when </span><span class="p">(</span><span class="nb">&lt; </span><span class="nv">count</span> <span class="nv">n</span><span class="p">)</span>
-      <span class="p">(</span><span class="nf">fib-iter</span> <span class="nv">n</span>
-            <span class="p">(</span><span class="nb">+ </span><span class="nv">count</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="p">(</span><span class="nf">fib</span> <span class="nv">count</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">fib-iter</span> <span class="n">n</span> <span class="nb">count</span> <span class="n">result</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">display</span> <span class="s2">&quot;Computing fib for &quot;</span><span class="p">)(</span><span class="nb">display</span> <span class="nb">count</span><span class="p">)(</span><span class="nb">display</span> <span class="s2">&quot;: &quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">display</span> <span class="n">result</span><span class="p">)(</span><span class="nb">newline</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">when</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nb">count</span> <span class="n">n</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">fib-iter</span> <span class="n">n</span>
+            <span class="p">(</span><span class="nb">+</span> <span class="nb">count</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">fib</span> <span class="nb">count</span><span class="p">)</span>
       <span class="p">)</span>
     <span class="p">)</span>
 <span class="p">)</span>
-<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">multifib</span> <span class="nv">n</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">fib-iter</span> <span class="nv">n</span> <span class="mi">1</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">multifib</span> <span class="n">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">fib-iter</span> <span class="n">n</span> <span class="mi">1</span> <span class="mi">0</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="p">(</span><span class="nf">multifib</span> <span class="mi">93</span><span class="p">)</span>
-</code></pre>
-</div>
+<span class="p">(</span><span class="n">multifib</span> <span class="mi">93</span><span class="p">)</span></code></pre></div>
 
 
 <p>And that's all there is to it: a racket fibonacci calculator that runs
@@ -293,40 +271,6 @@ how to translate it into a working program.</p>
 
 <p><a href="https://gist.github.com/vdloo/b3eed782c0b69617d718">You can find the put together version of this racket script on GitHub
 Gist</a></p>
-
-  </div>
-  <div class="span4">
-    <div id="about"><h3>About me</h3></div>
-
-<p>
-Rick van de Loo, software developer in the Amsterdam area. I like devops, cloud, python and LISP.
-<br>
-<br>
-Find me on <a href="https://github.com/vdloo">Github</a> or <a href="mailto:rickvandeloo@gmail.com">drop me a line</a></p>
-<hr>
-
-<p>Other posts:</p>
-<ul>
-  
-    <li><a href="/2014/11/24/configuring-network-bridge-debian-jessie-static-address/">Configuring a network bridge on Debian 8.0 for static addresses</a></li>
-  
-    <li><a href="/2014/11/21/partially-synchronising-a-structured-folder-to-smaller-storage/">Partially synchronising a structured folder (on a Synology machine) to a smaller storage</a></li>
-  
-    <li><a href="/2014/07/03/fibonacci-in-finite-fields-in-racket/">Implementing Fibonacci in finite fields, in racket</a></li>
-  
-    <li><a href="/2014/07/02/why-I-am-starting-the-SICP-reading-project-this-summer/">The SICP reading project</a></li>
-  
-    <li><a href="/2014/01/13/Suspend-and-continue-processes-in-a-shell-script/">Suspend and continue processes (ctrl+z) in a shell script</a></li>
-  
-    <li><a href="/2013/09/21/Fixing-the-ds-audio-and-video-you-are-not-authorized-to-use-this-service-error/">Not authorized to use this service in DS Audio and Video</a></li>
-  
-    <li><a href="/2012/08/01/Sending-data-over-Wi-Fi-without-associations/">Sending data over Wi-Fi without associations</a></li>
-  
-    <li><a href="/2012/08/01/Beacontalk-peer-to-peer-chat-program-that-sends-data-over-Wi-Fi-without-associations/">Beacontalk - Peer to peer chat-program that sends data over Wi-Fi without associations</a></li>
-  
-    <li><a href="/2012/06/03/Playlist2XBMC/">Playlist2XBMC</a></li>
-  
-</ul>
 
   </div>
 </div>

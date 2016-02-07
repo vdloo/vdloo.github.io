@@ -44,6 +44,248 @@ ript>
 
 <div class="row-fluid">
   <div class="span12">
+    <h2><a href="/2014/07/03/fibonacci-in-finite-fields-in-racket/">Implementing Fibonacci in finite fields, in racket</a></h2>
+    <h4>03 July 2014</h4>
+	<p>A couple of days ago <a href="https://github.com/ruud-v-a">Ruud van Asseldonk</a>
+submitted a post about <a href="http://ruudvanasseldonk.com/2014/07/01/fibonacci-numbers-in-finite-fields">Fibonacci numbers in finite
+fields</a>.
+In the post it is first explained that <a href="http://mathworld.wolfram.com/BinetsFibonacciNumberFormula.html">Binet's
+formula</a>
+holds up in a finite field, then an implementation of this method in c++
+is presented. Since <a href="http://rickvandeloo.com/2014/07/02/why-I-am-starting-the-SICP-reading-project-this-summer/">I have started going through
+SICP</a>,
+I thought it would be a nice exercise to port this implementation to
+scheme.</p>
+
+<p>The author's implementation consists of five functions:</p>
+
+<ol>
+<li>addmod</li>
+<li>submod</li>
+<li>mulmod</li>
+<li>powmod</li>
+<li>fib</li>
+</ol>
+
+
+<p>Porting the first two function is pretty straight forward.</p>
+
+<p>The original addmod function</p>
+
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">addmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">-</span> <span class="n">p</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+
+<p>becomes:</p>
+
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">addmod</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span>  <span class="p">(</span><span class="nb">&gt;</span> <span class="p">(</span><span class="nb">-</span> <span class="n">p</span> <span class="n">b</span><span class="p">)</span> <span class="n">a</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">+</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nb">+</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+
+
+<p>and the original submod function</p>
+
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">submod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">b</span><span class="p">)</span> <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">return</span> <span class="n">p</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+
+<p>becomes:</p>
+
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="k">submod</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;=</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">-</span> <span class="n">a</span> <span class="n">b</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nb">-</span> <span class="n">p</span> <span class="n">b</span><span class="p">)</span> <span class="n">a</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+
+
+<p>The mulmod function is a bit more complicated:</p>
+
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">mulmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">b</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">u64</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">b</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="n">r</span> <span class="o">=</span> <span class="n">addmod</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+        <span class="n">b</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">addmod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+
+<p>The implementation in scheme displays more clearly the difference
+between a functional programming language and the imperative c++. The
+implementation in scheme is ostensibly inside out compared to the
+original.</p>
+
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">mulmod</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">mulmod_rec</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">mulmod_rec</span> <span class="n">a</span> <span class="n">b</span> <span class="n">p</span> <span class="n">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;</span> <span class="n">b</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">mulmod_rec</span> <span class="p">(</span><span class="n">addmod</span> <span class="n">a</span> <span class="n">a</span> <span class="n">p</span><span class="p">)</span>
+          <span class="p">(</span><span class="nb">arithmetic-shift</span> <span class="n">b</span> <span class="mi">-1</span><span class="p">)</span>
+          <span class="n">p</span>
+          <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">bitwise-and</span> <span class="n">b</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="n">addmod</span> <span class="n">a</span> <span class="n">r</span> <span class="n">p</span><span class="p">)</span> <span class="n">r</span><span class="p">)</span>
+      <span class="p">)</span>
+      <span class="n">r</span>
+    <span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+
+
+<p>Instead of a while loop, the scheme implementation of mulmod calls
+itself. Scheme doesn't have looping constructs because of the way the
+language was designed; there is no need for a special form to do this
+because Scheme allows you to conveniently define iterative processes by
+means of recursive procedures.</p>
+
+<p>Porting this function was the moment where I decided to move over from
+mit-scheme to plt-scheme, also known as Racket. In order to stay close
+to the original I wanted to use the <a href="http://en.wikipedia.org/wiki/Bitwise_operation">bitwise
+operations</a> AND (&amp;) and
+the right arithmetic shift (>>=). Unfortunately to the best of my
+knowledge mit-scheme doesn't offer built in bitwise operations on
+anything but
+<a href="http://web.mit.edu/scheme_v9.0.1/doc/mit-scheme-ref/Fixnum-Operations.html">fixnums</a>
+and <a href="http://www.cse.iitb.ac.in/~as/mit-scheme/scheme_10.html#SEC103">bit
+strings</a>,
+but luckily <a href="http://docs.racket-lang.org/reference/generic-numbers.html#%28part._.Bitwise_.Operations%29">racket
+does</a>.</p>
+
+<p>Next up is powmod:</p>
+
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">powmod</span><span class="p">(</span><span class="n">u64</span> <span class="n">a</span><span class="p">,</span> <span class="n">u64</span> <span class="n">e</span><span class="p">,</span> <span class="n">u64</span> <span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">u64</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">e</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">e</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="n">r</span> <span class="o">=</span> <span class="n">mulmod</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+        <span class="n">e</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mulmod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+
+<p>Which follows almost the exact same structure as mulmod:</p>
+
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">powmod</span> <span class="n">a</span> <span class="n">e</span> <span class="n">p</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">powmod_rec</span> <span class="n">a</span> <span class="n">e</span> <span class="n">p</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">powmod_rec</span> <span class="n">a</span> <span class="n">e</span> <span class="n">p</span> <span class="n">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;</span> <span class="n">e</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">powmod_rec</span> <span class="p">(</span><span class="n">mulmod</span> <span class="n">a</span> <span class="n">a</span> <span class="n">p</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">arithmetic-shift</span> <span class="n">e</span> <span class="mi">-1</span><span class="p">)</span>
+            <span class="n">p</span>
+            <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">bitwise-and</span> <span class="n">e</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="n">mulmod</span> <span class="n">r</span> <span class="n">a</span> <span class="n">p</span><span class="p">)</span> <span class="n">r</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">r</span>
+    <span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+
+
+<p>Note that instead of doing assigning 0 to r before the while loop in
+mulmod we seed that 0 as a parameter every time mulmod is called to
+mulmod_rec. The same goes for powmod and powmod_rec.</p>
+
+<p>To tie it all together we have the fib function:</p>
+
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp"><span class="n">u64</span> <span class="nf">fib</span><span class="p">(</span><span class="n">u64</span> <span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">u64</span> <span class="n">p</span>     <span class="o">=</span> <span class="mh">0xa94fad42221f27ad</span><span class="p">;</span>
+    <span class="n">u64</span> <span class="n">v</span>     <span class="o">=</span> <span class="mh">0x0b92025517515f58</span><span class="p">;</span>
+    <span class="n">u64</span> <span class="n">v_inv</span> <span class="o">=</span> <span class="mh">0x242d231e3eb01b01</span><span class="p">;</span>
+
+    <span class="n">u64</span> <span class="n">a</span>        <span class="o">=</span> <span class="n">powmod</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">v</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="n">u64</span> <span class="n">b</span>        <span class="o">=</span> <span class="n">powmod</span><span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">v</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="n">u64</span> <span class="n">pow2_inv</span> <span class="o">=</span> <span class="n">powmod</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+
+    <span class="n">u64</span> <span class="n">diff</span>   <span class="o">=</span> <span class="n">submod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="n">u64</span> <span class="n">factor</span> <span class="o">=</span> <span class="n">mulmod</span><span class="p">(</span><span class="n">v_inv</span><span class="p">,</span> <span class="n">pow2_inv</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">mulmod</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+<span class="p">}</span></code></pre></div>
+
+
+<p>Which in Racket looks like:</p>
+
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">fib</span> <span class="n">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">q</span><span class="p">)</span>     <span class="mi">12200160415121876909</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">v</span><span class="p">)</span>     <span class="mi">833731445503647576</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">v_inv</span><span class="p">)</span> <span class="mi">2606778372125104897</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">mulmod</span> <span class="p">(</span><span class="k">submod</span> <span class="p">(</span><span class="n">powmod</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="n">n</span> <span class="p">(</span><span class="n">q</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">powmod</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="n">n</span> <span class="p">(</span><span class="n">q</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">q</span><span class="p">)</span>
+          <span class="p">)</span>
+          <span class="p">(</span><span class="n">mulmod</span> <span class="p">(</span><span class="n">v_inv</span><span class="p">)</span>
+              <span class="p">(</span><span class="n">powmod</span> <span class="mi">2</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="mi">1</span> <span class="n">n</span><span class="p">)</span> <span class="p">(</span><span class="n">q</span><span class="p">))</span>
+              <span class="p">(</span><span class="n">q</span><span class="p">)</span>
+          <span class="p">)</span>
+          <span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+
+
+<p>So now we have all the components to generate a Fibonacci number. It
+would of course be way more gratifying to have the program compute all
+the numbers up to <a href="http://ruudvanasseldonk.com/2014/07/01/fibonacci-numbers-in-finite-fields#finite-fields">the maximum of
+N=93</a>
+instead of simply computing one at a time. To do that we can use the
+<a href="http://docs.racket-lang.org/reference/when_unless.html">when evaluator</a>
+in a recursive procedure. Full disclosure though: it would probably be
+faster to use the regular iterative method if you are going to calculate
+all the numbers anyway, but that doesn't take away the fun.</p>
+
+<div class="highlight"><pre><code class="language-racket" data-lang="racket"><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">fib-iter</span> <span class="n">n</span> <span class="nb">count</span> <span class="n">result</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">display</span> <span class="s2">&quot;Computing fib for &quot;</span><span class="p">)(</span><span class="nb">display</span> <span class="nb">count</span><span class="p">)(</span><span class="nb">display</span> <span class="s2">&quot;: &quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">display</span> <span class="n">result</span><span class="p">)(</span><span class="nb">newline</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">when</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nb">count</span> <span class="n">n</span><span class="p">)</span>
+      <span class="p">(</span><span class="n">fib-iter</span> <span class="n">n</span>
+            <span class="p">(</span><span class="nb">+</span> <span class="nb">count</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">fib</span> <span class="nb">count</span><span class="p">)</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="n">multifib</span> <span class="n">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">fib-iter</span> <span class="n">n</span> <span class="mi">1</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="p">(</span><span class="n">multifib</span> <span class="mi">93</span><span class="p">)</span></code></pre></div>
+
+
+<p>And that's all there is to it: a racket fibonacci calculator that runs
+in constant time by use of finite fields. Lots of praise to the original
+author for this fascinating nugget of information and for figuring out
+how to translate it into a working program.</p>
+
+<p><a href="https://gist.github.com/vdloo/b3eed782c0b69617d718">You can find the put together version of this racket script on GitHub
+Gist</a></p>
+
+	
+  </div>
+    <p>
+      <a href="/2014/07/03/fibonacci-in-finite-fields-in-racket/">Permalink</a>
+    </p>
+</div>
+<hr>
+
+
+
+<div class="row-fluid">
+  <div class="span12">
     <h2><a href="/2014/07/02/why-I-am-starting-the-SICP-reading-project-this-summer/">The SICP reading project</a></h2>
     <h4>02 July 2014</h4>
 	<p>Programming all day is fun, but the reality is that I am in college
@@ -259,17 +501,13 @@ Github.</a></p>
 <p>Control-z is very interesting because it suspends the process you are running, effectively pausing it. It works by sending the TSTP signal to the process. This can be very convenient if you just need to clear up some processing power or have another reason to give your process a break before continuing (like for example pausing tar if your volume is about to have no space left). The Control-z functionality can be simulated by running kill -TSTP $PID with $PID as the process ID of your process. Just like you might resume the process with fg in the command line, you can run kill -CONT $PID to un-pause the process. So if you were to implement this in a shell script, you could do something like
 <br></p>
 
-<div class="highlight"><pre><code class="bash"><span class="nv">$ </span><span class="nb">command</span> &amp; <span class="nv">COMMANDPID</span><span class="o">=</span><span class="nv">$!</span>
-</code></pre>
-</div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="nb">command</span> <span class="p">&amp;</span> <span class="nv">COMMANDPID</span><span class="o">=</span><span class="nv">$!</span></code></pre></div>
 
 
 <p>and then do
 <br></p>
 
-<div class="highlight"><pre><code class="bash"><span class="nv">$ </span><span class="nb">kill</span> -TSTP <span class="nv">$COMMANDPID</span>
-</code></pre>
-</div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="nb">kill</span> -TSTP <span class="nv">$COMMANDPID</span></code></pre></div>
 
 
 <p>to pause your process after initial execution ($! catches the PID of the last launched process in the shell, if you get "-bash: !: event not found" add a whitespace after the !). The problem with this approach is that this functionality is mostly useful when you are running parts of your script parallel and already in the background or in subshells, and if that is the case then doing kill -TSTP might not be good enough.
@@ -278,11 +516,9 @@ Github.</a></p>
 <p>You can run a script or program with lots of subprocesses or subshells and neatly pause it with Control-z. If you'd try the same thing with the kill -TSTP command in a complex shell script you might run into some difficulties. The difference here is that kill -TSTP only sends the signal to the highest PID in the hierarchy and the signal won't reach all the levels. This is often not a problem because most scripts don't go that deep, if you want that level of abstraction for system stuff you are probably better of with some scripting language like python or perl. But hey, in the spirit of why not: to make sure you are actually suspending the entire process chain you can do something like this.
 <br></p>
 
-<div class="highlight"><pre><code class="bash"><span class="nv">$ </span><span class="k">for </span>childprocess in <span class="k">$(</span>ps -o pid --ppid <span class="nv">$PID</span> | tail -n +2<span class="k">)</span>; 
-    <span class="k">do </span><span class="nb">kill</span> -TSTP <span class="nv">$childprocess</span>; 
-  <span class="k">done</span>;
-</code></pre>
-</div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="k">for</span> childprocess in <span class="k">$(</span>ps -o pid --ppid <span class="nv">$PID</span> <span class="p">|</span> tail -n +2<span class="k">)</span><span class="p">;</span> 
+    <span class="k">do</span> <span class="nb">kill</span> -TSTP <span class="nv">$childprocess</span><span class="p">;</span> 
+  <span class="k">done</span><span class="p">;</span></code></pre></div>
 
 
 <p>replace TSTP with CONT to continue the chain. Watch out though, the --ppid flag (select by parent process ID) is not supported on FreeBSD so if that's your platform you might have to figure out something else.</p>
@@ -291,61 +527,6 @@ Github.</a></p>
   </div>
     <p>
       <a href="/2014/01/13/Suspend-and-continue-processes-in-a-shell-script/">Permalink</a>
-    </p>
-</div>
-<hr>
-
-
-
-<div class="row-fluid">
-  <div class="span12">
-    <h2><a href="/2013/09/21/Fixing-the-ds-audio-and-video-you-are-not-authorized-to-use-this-service-error/">Not authorized to use this service in DS Audio and Video</a></h2>
-    <h4>21 September 2013</h4>
-	<p>Since I updated my phone to iOS7 I've been encountering the following error when attempting to log in using the DS Audio and Video apps.
-<br>
-<br></p>
-
-<p style="text-align:center;"> <em>"you are not authorized to use this service"</em></p>
-
-<p><br>
-Reinstalling the apps didn't solve the issue for me and the error seemed exclusive to my phone as logging in still worked flawlessly on other devices running the same version of the OS.</p>
-
-<p>Since I didn't want to resort to resetting my phone, I did some more troubleshooting and these are the solutions (and possible problems causing the error) I came across, so if you are experiencing the same error, trying these things might save you a headache.</p>
-
-<p><br></p>
-
-<h3>Checking the automatic block-list</h3>
-
-<p>To check if this problem is causing your error, change the ip address of your iOS device and attempt to log in. If the error no longer occurs, there is a good chance that the Synology NAS has blocked your ip address.</p>
-
-<p>To make sure this was the cause of the problem, and to possibly prevent future similar things from happening do the following:</p>
-
-<p>In the DSM control panel, click on the icon of Auto Block and see if you have this option enabled. Also check the Block List tab to see if some (or any) of the ips listed there are those of your devices.</p>
-
-<p>If you have shell access to the NAS you can also look in the files /etc/host.deny and /etc/hosts.allow to see if there is anything interesting there that might prevent you from logging in.
-<br><br></p>
-
-<h3>Updating the DSM time settings</h3>
-
-<p>If the previous bullet point didn't solve your problem, you might try updating the time settings of your DSM. Do this in Control Panel -> Regional Options -> Time. Try changing the Time Setting from 'Manually' to 'Synchronize with a NTP server' and press the 'Update Now' button. An offset of a couple of minutes could be enough to cause the 'you are not authorized to use this service' error. To achieve the same effect from the commandline, you could also run the following command:</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># ntpd -q</span>
-</code></pre>
-</div>
-
-
-<p><br></p>
-
-<h3>Changing the iOS time setting from '24-Hour Time' to '12-Hour Time'</h3>
-
-<p>This step is what I think finally solved the problem for me. For some reason the combination of turning off 24 Hour time (and restarting the phone) was what enabled me to log into the Audio Station using the DS Audio app once again. I have no idea if this was what actually caused the problem, and I couldn't reproduce the problem afterwards either, but if the previous approaches were of no help, you could give it a shot.</p>
-
-<p>If these three things didn't solve the problem for you, you could try to enable logging in the Audio Station -> Settings -> Options menu to take a look under the hood, and maybe this log in combination with the /var/log/synolog file will give you some insights on what might be the cause of your problem.</p>
-
-	
-  </div>
-    <p>
-      <a href="/2013/09/21/Fixing-the-ds-audio-and-video-you-are-not-authorized-to-use-this-service-error/">Permalink</a>
     </p>
 </div>
 <hr>
@@ -374,6 +555,10 @@ Reinstalling the apps didn't solve the issue for me and the error seemed exclusi
           <li><a href="/page3">3</a></li>
           
         
+          
+          <li><a href="/page4">4</a></li>
+          
+        
         
         <li><a href="/page3">Next</a></li>
         
@@ -396,6 +581,8 @@ Find me on <a href="https://github.com/vdloo">Github</a> or <a href="mailto:rick
 
 <p>Other posts:</p>
 <ul>
+  
+    <li><a href="/2016/01/31/managing-dns-for-moving-devices-using-consul-and-cjdns/">Managing dns for moving devices with consul and cjdns</a></li>
   
     <li><a href="/2014/11/24/configuring-network-bridge-debian-jessie-static-address/">Configuring a network bridge on Debian 8.0 for static addresses</a></li>
   
