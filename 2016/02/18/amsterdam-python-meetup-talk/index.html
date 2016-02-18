@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>rickvandeloo.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Homepage of Rick van de Loo">
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px;
+      }
+    </style>
+    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="/css/zenburn.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></sc\
+ript>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/">rickvandeloo.com</a>
+            <ul class="nav">
+              <li class="active"><a href="/">Home</a></li>
+              <li style="padding: 0;"><a href="/#about">About</a></li>
+            </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+
+<div class="row-fluid">
+  <div class="span12">
+    <h1>Amsterdam Python Meetup talk about TaskFlow</h1>
+    <p class="muted">18 February 2016</p>
+
+    <p>Yesterday I did a talk about Openstack TaskFlow at the Amsterdam Python
+Meetup.  TaskFlow is a cool Python library that can help you write code
+that can deal with unreliable systems (like flaky APIs with calls that
+need retrying and/or reverting). It also enables you to continue a flow
+(collection of tasks) where it left off if the original worker died with
+relative ease. With TaskFlow you can use a jobboard (either based on
+Zookeeper or Redis) which makes it very scalable.</p>
+
+<p>Conductors atomically pick up jobs from the jobboard and record their
+state in a persistence backend (Zookeeper, MySQL or some other options),
+so at all times the system knows how far a flow has progressed and what
+actions still need to happen.</p>
+
+<p>You can find the hosted Jupyter nbviewer slides
+<a href="https://nbviewer.jupyter.org/format/slides/github/vdloo/python-meetup-taskflow/blob/master/presentation.ipynb#/https://nbviewer.jupyter.org/format/slides/github/vdloo/python-meetup-taskflow/blob/master/presentation.ipynb#/">here</a>
+and the notebook on GitHub
+<a href="https://github.com/vdloo/python-meetup-taskflow">here</a>.</p>
+
+<p>The slides were created by converting a Jupyter (previously named IPython)
+notebook to html with jupyter nbconvert:</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">jupyter nbconvert presentation.ipynb --to slides</code></pre></div>
+
+
+<p>And cloning the HTML presentation framework
+<a href="https://github.com/hakimel/reveal.js/">reveal.js</a> into the same directory as
+the generated .html file.</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">git clone https://github.com/hakimel/reveal.js/</code></pre></div>
+
+
+
+
+  </div>
+</div>
+
+</div>
+
+  </body>
+</html>
+
